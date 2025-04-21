@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8" />
+    <title>OCR 테스트</title>
+    <style>
+        body {
+            font-family: "Segoe UI", sans-serif;
+            margin: 2rem;
+            background-color: #f9f9f9;
+            color: #333;
+        }
+
+        h2 {
+            margin-bottom: 1rem;
+        }
+
+        #fileInput {
+            margin-bottom: 1rem;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-left: 1rem;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        pre {
+            background: #272822;
+            color: #f8f8f2;
+            padding: 1rem;
+            border-radius: 6px;
+            white-space: pre-wrap;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+<h2>📷 OCR 테스트 (Base64 방식)</h2>
+
+<!-- 이미지 업로드용 input -->
+<input type="file" id="fileInput" accept="image/*" />
+<button onclick="sendImage()">이미지 전송</button>
+
+<!-- 결과 출력 영역 -->
+<pre id="result">응답 내용이 여기에 표시됩니다.</pre>
+
+<script>
+    function sendImage() {
+        const input = document.getElementById('fileInput');
+        const file = input.files[0];
+
+        if (!file) {
+            alert("📂 파일을 선택해주세요!");
+            return;
+        }
+
+        const reader = new FileReader();
+
+        reader.onloadend = () => {
+            fetch('/ocr/test', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ base64: reader.result })
+            })
+                .then(res => res.text())
+                .then(data => {
+                    // JSON 여부에 관계없이 줄바꿈 기준 그대로 출력
+                    document.getElementById('result').textContent = data;
+                })
+                .catch(err => {
+                    console.error(err);
+                    document.getElementById('result').textContent = "❌ 오류 발생: " + err.message;
+                });
+        };
+
+        reader.readAsDataURL(file); // 이미지를 Base64로 인코딩
+    }
+</script>
+
+</body>
+</html>
