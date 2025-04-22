@@ -19,6 +19,13 @@
             margin-bottom: 1rem;
         }
 
+        #preview {
+            max-width: 150px;
+            margin-top: 1rem;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+        }
+
         button {
             background-color: #4CAF50;
             color: white;
@@ -45,16 +52,34 @@
     </style>
 </head>
 <body>
-<h2>📷 OCR 테스트 (Base64 방식)</h2>
+<h2>📷 OCR 테스트 (Base64 → JSON 분석)</h2>
 
 <!-- 이미지 업로드용 input -->
 <input type="file" id="fileInput" accept="image/*" />
 <button onclick="sendImage()">이미지 전송</button>
 
+<!-- 이미지 미리보기 -->
+<div>
+    <img id="preview" src="" alt="선택한 이미지 미리보기" />
+</div>
+
 <!-- 결과 출력 영역 -->
 <pre id="result">응답 내용이 여기에 표시됩니다.</pre>
 
 <script>
+    // 이미지 선택 시 미리보기 보여주기
+    document.getElementById('fileInput').addEventListener('change', function () {
+        const file = this.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = () => {
+            document.getElementById('preview').src = reader.result;
+        };
+        reader.readAsDataURL(file);
+    });
+
+    // 이미지 전송 함수
     function sendImage() {
         const input = document.getElementById('fileInput');
         const file = input.files[0];
@@ -67,15 +92,19 @@
         const reader = new FileReader();
 
         reader.onloadend = () => {
-            fetch('/ocr/test', {
+            const base64Data = reader.result;
+
+            // /ocr/analyze API 호출
+            fetch('/ocr/analyze', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ base64: reader.result })
+                body: JSON.stringify({ base64: base64Data })
             })
-                .then(res => res.text())
+                .then(res => res.json())
                 .then(data => {
-                    // JSON 여부에 관계없이 줄바꿈 기준 그대로 출력
-                    document.getElementById('result').textContent = data;
+                    // JSON을 예쁘게 출력
+                    const formatted = JSON.stringify(data, null, 2);
+                    document.getElementById('result').textContent = formatted;
                 })
                 .catch(err => {
                     console.error(err);
@@ -83,7 +112,7 @@
                 });
         };
 
-        reader.readAsDataURL(file); // 이미지를 Base64로 인코딩
+        reader.readAsDataURL(file);
     }
 </script>
 
