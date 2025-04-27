@@ -1,6 +1,9 @@
 package com.parkssu.adari_api.ocr.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
+
+import java.util.List;
 
 /**
  * 클라이언트가 서버로 이미지를 전송할 때 사용하는 요청 객체입니다.
@@ -11,5 +14,9 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ImageParsingRequest {
-    private String base64;  // 클라이언트에서 전달하는 base64 이미지 문자열
+    @Schema(
+            description = "Base64 인코딩된 이미지들의 리스트. 긴 영수증을 여러 장 촬영한 경우 여러 이미지를 업로드합니다.",
+            example = "[\"data:image/jpeg;base64,/9j/4AAQSkZ...\", \"data:image/jpeg;base64,/9j/4BBQSkZ...\"]"
+    )
+    private List<String> base64Images;
 }

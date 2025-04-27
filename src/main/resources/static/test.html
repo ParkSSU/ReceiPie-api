@@ -10,22 +10,18 @@
             background-color: #f9f9f9;
             color: #333;
         }
-
         h2 {
             margin-bottom: 1rem;
         }
-
         #fileInput {
             margin-bottom: 1rem;
         }
-
         #preview {
             max-width: 150px;
             margin-top: 1rem;
             border: 1px solid #ccc;
             border-radius: 6px;
         }
-
         button {
             background-color: #4CAF50;
             color: white;
@@ -35,11 +31,9 @@
             cursor: pointer;
             margin-left: 1rem;
         }
-
         button:hover {
             background-color: #45a049;
         }
-
         pre {
             background: #272822;
             color: #f8f8f2;
@@ -52,16 +46,15 @@
     </style>
 </head>
 <body>
-<h2>📷 OCR 테스트 (Base64 → JSON 분석)</h2>
+
+<h2>📷 OCR 테스트 (여러 이미지 업로드 지원)</h2>
 
 <!-- 이미지 업로드용 input -->
-<input type="file" id="fileInput" accept="image/*" />
-<button onclick="sendImage()">이미지 전송</button>
+<input type="file" id="fileInput" accept="image/*" multiple />
+<button onclick="sendImages()">이미지 전송</button>
 
 <!-- 이미지 미리보기 -->
-<div>
-    <img id="preview" src="" alt="선택한 이미지 미리보기" />
-</div>
+<div id="previewArea"></div>
 
 <!-- 결과 출력 영역 -->
 <pre id="result">응답 내용이 여기에 표시됩니다.</pre>
@@ -69,50 +62,70 @@
 <script>
     // 이미지 선택 시 미리보기 보여주기
     document.getElementById('fileInput').addEventListener('change', function () {
-        const file = this.files[0];
-        if (!file) return;
+        const previewArea = document.getElementById('previewArea');
+        previewArea.innerHTML = ''; // 기존 이미지 지우기
 
-        const reader = new FileReader();
-        reader.onload = () => {
-            document.getElementById('preview').src = reader.result;
-        };
-        reader.readAsDataURL(file);
+        const files = this.files;
+        if (!files.length) return;
+
+        for (const file of files) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = document.createElement('img');
+                img.src = e.target.result;
+                img.style.maxWidth = "150px";
+                img.style.margin = "10px";
+                previewArea.appendChild(img);
+            };
+            reader.readAsDataURL(file);
+        }
     });
 
-    // 이미지 전송 함수
-    function sendImage() {
+    // 여러 이미지 전송 함수
+    function sendImages() {
         const input = document.getElementById('fileInput');
-        const file = input.files[0];
+        const files = input.files;
 
-        if (!file) {
+        if (!files.length) {
             alert("📂 파일을 선택해주세요!");
             return;
         }
 
-        const reader = new FileReader();
+        const promises = [];
 
-        reader.onloadend = () => {
-            const base64Data = reader.result;
+        // 모든 파일을 base64로 변환
+        for (const file of files) {
+            const promise = new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onloadend = () => resolve(reader.result);
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+            promises.push(promise);
+        }
 
-            // /ocr/analyze API 호출
-            fetch('/ocr/analyze', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ base64: base64Data })
-            })
-                .then(res => res.json())
-                .then(data => {
-                    // JSON을 예쁘게 출력
-                    const formatted = JSON.stringify(data, null, 2);
-                    document.getElementById('result').textContent = formatted;
+        Promise.all(promises)
+            .then(base64Images => {
+                // /ocr/analyze API 호출
+                fetch('/ocr/analyze', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ base64Images: base64Images })
                 })
-                .catch(err => {
-                    console.error(err);
-                    document.getElementById('result').textContent = "❌ 오류 발생: " + err.message;
-                });
-        };
-
-        reader.readAsDataURL(file);
+                    .then(res => res.json())
+                    .then(data => {
+                        const formatted = JSON.stringify(data, null, 2);
+                        document.getElementById('result').textContent = formatted;
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        document.getElementById('result').textContent = "❌ 오류 발생: " + err.message;
+                    });
+            })
+            .catch(err => {
+                console.error(err);
+                alert('❌ 이미지 변환 중 오류가 발생했습니다.');
+            });
     }
 </script>
 
