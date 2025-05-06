@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>카카오 로그인 테스트</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 100px;
+        }
+        .kakao-button {
+            background-color: #FEE500;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: bold;
+            color: #000;
+            cursor: pointer;
+            border-radius: 6px;
+        }
+        .kakao-button:hover {
+            background-color: #ffd900;
+        }
+    </style>
+</head>
+<body>
+
+<h1>🟡 카카오 로그인 테스트</h1>
+
+<button class="kakao-button" onclick="kakaoLogin()">카카오로 로그인</button>
+
+<script>
+    function kakaoLogin() {
+        // 인가 코드 요청 URL
+        const kakaoUrl = "https://kauth.kakao.com/oauth/authorize" +
+            "?response_type=code" +
+            "&client_id=91db8a45225f8bfff3cd28705d98e385" +
+            "&redirect_uri=http://localhost:8080/api/oauth/kakao/callback";
+
+        // 로그인 창으로 리디렉션
+        window.location.href = kakaoUrl;
+    }
+</script>
+
+</body>
+</html>

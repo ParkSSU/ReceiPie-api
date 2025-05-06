@@ -4,10 +4,10 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class ReceiPieApplication {
+public class ReceiPieApiApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(ReceiPieApplication.class, args);
+		SpringApplication.run(ReceiPieApiApplication.class, args);
 	}
 
 }
