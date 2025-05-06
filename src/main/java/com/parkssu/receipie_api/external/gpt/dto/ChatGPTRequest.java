@@ -1,4 +1,4 @@
-package com.parkssu.adari_api.external.gpt.dto;
+package com.parkssu.receipie_api.external.gpt.dto;
 
 import lombok.*;
 import java.util.List;

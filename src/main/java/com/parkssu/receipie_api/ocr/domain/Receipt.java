@@ -1,4 +1,4 @@
-package com.parkssu.adari_api.ocr.domain;
+package com.parkssu.receipie_api.ocr.domain;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;

@@ -1,8 +1,8 @@
-package com.parkssu.adari_api.ocr.controller;
+package com.parkssu.receipie_api.ocr.controller;
 
-import com.parkssu.adari_api.ocr.dto.ImageParsingRequest;
-import com.parkssu.adari_api.ocr.dto.ReceiptResponseDto;
-import com.parkssu.adari_api.ocr.service.OCRService;
+import com.parkssu.receipie_api.ocr.dto.ImageParsingRequest;
+import com.parkssu.receipie_api.ocr.dto.ReceiptResponseDto;
+import com.parkssu.receipie_api.ocr.service.OCRService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

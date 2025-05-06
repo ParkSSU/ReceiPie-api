@@ -1,4 +1,4 @@
-package com.parkssu.adari_api;
+package com.parkssu.receipie_api;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

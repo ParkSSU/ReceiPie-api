@@ -1,4 +1,4 @@
-package com.parkssu.adari_api;
+package com.parkssu.receipie_api;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

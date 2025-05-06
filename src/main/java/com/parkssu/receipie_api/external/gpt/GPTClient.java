@@ -1,6 +1,6 @@
-package com.parkssu.adari_api.external.gpt;
+package com.parkssu.receipie_api.external.gpt;
 
-import com.parkssu.adari_api.external.gpt.dto.*;
+import com.parkssu.receipie_api.external.gpt.dto.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;

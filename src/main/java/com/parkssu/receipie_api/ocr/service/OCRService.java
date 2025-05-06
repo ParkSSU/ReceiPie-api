@@ -1,11 +1,10 @@
-package com.parkssu.adari_api.ocr.service;
+package com.parkssu.receipie_api.ocr.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.parkssu.adari_api.external.clova.ClovaOCRClient;
-import com.parkssu.adari_api.external.gpt.GPTClient;
-import com.parkssu.adari_api.ocr.domain.Item;
-import com.parkssu.adari_api.ocr.domain.Receipt;
-import com.parkssu.adari_api.ocr.dto.ReceiptResponseDto;
+import com.parkssu.receipie_api.external.clova.ClovaOCRClient;
+import com.parkssu.receipie_api.external.gpt.GPTClient;
+import com.parkssu.receipie_api.ocr.domain.Receipt;
+import com.parkssu.receipie_api.ocr.dto.ReceiptResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;

@@ -1,4 +1,4 @@
-package com.parkssu.adari_api.ocr.dto;
+package com.parkssu.receipie_api.ocr.dto;
 
 import lombok.*;
 import java.util.List;

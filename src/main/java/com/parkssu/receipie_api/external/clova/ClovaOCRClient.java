@@ -1,4 +1,4 @@
-package com.parkssu.adari_api.external.clova;
+package com.parkssu.receipie_api.external.clova;
 
 import org.json.*;
 import org.springframework.beans.factory.annotation.Value;

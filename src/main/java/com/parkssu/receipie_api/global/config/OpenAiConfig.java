@@ -1,4 +1,4 @@
-package com.parkssu.adari_api.global.config;
+package com.parkssu.receipie_api.global.config;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;

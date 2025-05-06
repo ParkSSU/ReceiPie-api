@@ -1,4 +1,4 @@
-package com.parkssu.adari_api.global.config;
+package com.parkssu.receipie_api.global.config;
 
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.OpenAPI;

@@ -1,4 +1,4 @@
-package com.parkssu.adari_api.ocr.dto;
+package com.parkssu.receipie_api.ocr.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
