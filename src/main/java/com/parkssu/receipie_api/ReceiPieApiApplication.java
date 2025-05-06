@@ -4,10 +4,10 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class AdariApiApplication {
+public class ReceiPieApiApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(AdariApiApplication.class, args);
+		SpringApplication.run(ReceiPieApiApplication.class, args);
 	}
 
 }
