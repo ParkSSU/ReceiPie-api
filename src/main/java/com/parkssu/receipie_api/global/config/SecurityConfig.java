@@ -24,8 +24,13 @@ public class SecurityConfig {
                 .formLogin(form -> form.disable())
                 .httpBasic(basic -> basic.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/oauth/**", "/test.html", "/login-test.html").permitAll() // 로그인은 누구나 접근
+                        .requestMatchers("/api/oauth/**", "/test.html", "/login-test.html", "/h2-console/**").permitAll() // H2 콘솔 허용
                         .anyRequest().authenticated() // 그 외는 인증 필요
+                )
+                .headers(headers -> headers
+                        .contentSecurityPolicy(csp -> csp
+                                .policyDirectives("frame-ancestors 'self'")
+                        )
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class); // 커스텀 필터 등록
 
