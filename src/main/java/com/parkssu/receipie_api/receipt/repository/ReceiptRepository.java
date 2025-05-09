@@ -13,8 +13,7 @@ import java.util.List;
 public interface ReceiptRepository extends JpaRepository<Receipt, Long> {
 
     /**
-     * 특정 사용자의 모든 영수증 목록 조회
-     * - username이 참여자로 등록된 영수증만 조회
+     * 특정 사용자가 총무로 등록된 영수증 목록 조회
      */
-    List<Receipt> findByParticipants_Username(String username);
+    List<Receipt> findByMember_Id(Long memberId);
 }

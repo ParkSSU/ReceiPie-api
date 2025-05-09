@@ -1,6 +1,7 @@
 package com.parkssu.receipie_api.receipt.entity;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.parkssu.receipie_api.member.entity.Member;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -32,6 +33,14 @@ public class Receipt {
 
     @Column(nullable = false) // 총 금액 (필수)
     private int totalPrice;
+
+    /**
+     * 영수증의 소유자 (총무, Member와 N:1 관계)
+     */
+    @ManyToOne
+    @JoinColumn(name = "member_id")
+    @JsonIgnore // 순환 참조 방지
+    private Member member;
 
     /**
      * 영수증에 속한 항목들 (1:N 관계)
