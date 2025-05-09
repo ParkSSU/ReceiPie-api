@@ -24,7 +24,7 @@ public class SecurityConfig {
                 .formLogin(form -> form.disable())
                 .httpBasic(basic -> basic.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/oauth/**", "/test.html", "/login-test.html", "/h2-console/**").permitAll() // H2 콘솔 허용
+                        .requestMatchers("/swagger-ui/**","/api-docs/**","/api/oauth/**", "/test.html", "/login-test.html", "/h2-console/**").permitAll() // H2 콘솔 허용
                         .anyRequest().authenticated() // 그 외는 인증 필요
                 )
                 .headers(headers -> headers

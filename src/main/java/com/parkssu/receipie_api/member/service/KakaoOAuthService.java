@@ -49,14 +49,22 @@ public class KakaoOAuthService {
         JsonNode userInfo = requestUserInfo(accessToken);
 
         String email = userInfo.get("kakao_account").get("email").asText();
-        String nickname = userInfo.get("properties").get("nickname").asText();
+
+        // null 처리 방법 고민 중 vs ObjectMapper
+        String nickname = Optional.ofNullable(userInfo.get("properties"))
+                .map(properties -> properties.get("nickname"))
+                .map(JsonNode::asText)
+                .orElse("닉네임");
+
+
 
         // 3단계: DB에 사용자 저장 (없으면)
         Optional<Member> optionalMember = memberRepository.findByEmail(email);
+        String finalNickname = nickname;
         Member member = optionalMember.orElseGet(() -> {
             return memberRepository.save(Member.builder()
                     .email(email)
-                    .nickname(nickname)
+                    .nickname(finalNickname)
                     .build());
         });
 

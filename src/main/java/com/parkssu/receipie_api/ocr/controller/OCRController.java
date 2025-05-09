@@ -4,6 +4,7 @@ import com.parkssu.receipie_api.ocr.dto.ImageParsingRequest;
 import com.parkssu.receipie_api.ocr.dto.ReceiptResponseDto;
 import com.parkssu.receipie_api.ocr.service.OCRService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController // Spring의 REST 컨트롤러임을 명시 (자동으로 JSON 반환)
 @RequestMapping("/ocr") // 모든 경로는 /ocr 하위로 시작됨
 @RequiredArgsConstructor // 생성자 주입 자동 생성
+@Tag(name="OCR", description = "OCR 관련 API")
 public class OCRController {
 
     private final OCRService ocrService;
