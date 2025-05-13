@@ -19,4 +19,13 @@ public class ImageParsingRequest {
             example = "[\"data:image/jpeg;base64,/9j/4AAQSkZ...\", \"data:image/jpeg;base64,/9j/4BBQSkZ...\"]"
     )
     private List<String> base64Images;
+
+    /**
+     * 이미지 개수를 반환하는 메서드
+     *
+     * @return int - 이미지 개수
+     */
+    public int getImageCount() {
+        return base64Images == null ? 0 : base64Images.size();
+    }
 }

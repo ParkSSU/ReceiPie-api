@@ -93,4 +93,15 @@ public class JwtUtil {
             return e.getClaims(); // 만료된 토큰도 claims를 꺼낼 수 있음
         }
     }
+
+    /**
+     * JWT 토큰에서 userId를 추출한다.
+     *
+     * @param token - JWT 토큰
+     * @return String - 사용자 ID
+     */
+    public String getUserIdFromToken(String token) {
+        Claims claims = parseClaims(token);
+        return claims.getSubject(); // userId가 Subject에 저장되어 있다고 가정
+    }
 }

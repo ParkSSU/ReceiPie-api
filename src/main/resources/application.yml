@@ -21,6 +21,11 @@ spring:
     console:
       enabled: true
 
+  # 스케줄러 활성화
+  task:
+    scheduling:
+      enabled: true
+
 springdoc:
   swagger-ui:
     path: /swagger-ui.html

@@ -6,8 +6,11 @@ import com.parkssu.receipie_api.ocr.service.OCRService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.io.IOException;
 
 /**
  * OCRController는 클라이언트 요청을 받아 OCR 분석을 수행하고,
@@ -20,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 public class OCRController {
 
     private final OCRService ocrService;
+    private static final int MAX_IMAGE_COUNT = 3;
 
     /**
      * POST /ocr/analyze
@@ -34,8 +38,15 @@ public class OCRController {
                 - 응답은 품목 리스트, 총합계, 상호명, 날짜 정보를 포함합니다.
                 """
     )
-    public ResponseEntity<ReceiptResponseDto> analyze(
-            @RequestBody ImageParsingRequest request) throws Exception {
+    public ResponseEntity<?> analyze(@RequestBody ImageParsingRequest request) throws IOException {
+
+        int imageCount = request.getBase64Images().size();
+
+        if (imageCount > MAX_IMAGE_COUNT) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("Too many images. Maximum allowed images per request: " + MAX_IMAGE_COUNT);
+        }
+
         ReceiptResponseDto result = ocrService.processImages(request.getBase64Images());
         return ResponseEntity.ok(result);
     }
