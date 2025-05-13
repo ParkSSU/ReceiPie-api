@@ -23,7 +23,6 @@ import java.io.IOException;
 public class OCRController {
 
     private final OCRService ocrService;
-    private static final int MAX_IMAGE_COUNT = 3;
 
     /**
      * POST /ocr/analyze
@@ -39,13 +38,6 @@ public class OCRController {
                 """
     )
     public ResponseEntity<?> analyze(@RequestBody ImageParsingRequest request) throws IOException {
-
-        int imageCount = request.getBase64Images().size();
-
-        if (imageCount > MAX_IMAGE_COUNT) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body("Too many images. Maximum allowed images per request: " + MAX_IMAGE_COUNT);
-        }
 
         ReceiptResponseDto result = ocrService.processImages(request.getBase64Images());
         return ResponseEntity.ok(result);

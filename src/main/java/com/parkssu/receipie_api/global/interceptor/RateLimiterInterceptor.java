@@ -1,8 +1,10 @@
 package com.parkssu.receipie_api.global.interceptor;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.parkssu.receipie_api.global.filter.CachedBodyHttpServletWrapper;
 import com.parkssu.receipie_api.global.jwt.JwtUtil;
 import com.parkssu.receipie_api.global.service.RateLimiterService;
+import com.parkssu.receipie_api.ocr.dto.ImageParsingRequest;
 import io.github.bucket4j.Bucket;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -13,8 +15,8 @@ import org.springframework.web.servlet.HandlerInterceptor;
 import java.io.IOException;
 
 /**
- * 사용자별 요청 제한을 관리하는 인터셉터.
- * 요청당 1개의 토큰을 소비하도록 설정.
+ * ✅ RateLimiterInterceptor
+ * - /ocr/analyze 요청에 대해 이미지 개수 기준으로 제한을 두는 인터셉터
  */
 @RequiredArgsConstructor
 public class RateLimiterInterceptor implements HandlerInterceptor {
@@ -22,6 +24,15 @@ public class RateLimiterInterceptor implements HandlerInterceptor {
     private final RateLimiterService rateLimiterService;
     private final JwtUtil jwtUtil;
 
+    /**
+     * 인터셉터에서 Request Body를 읽고 이미지 개수를 추출하여 제한을 검증
+     *
+     * @param request  HttpServletRequest - 요청 객체
+     * @param response HttpServletResponse - 응답 객체
+     * @param handler  Object - 핸들러 (컨트롤러)
+     * @return boolean - true: 요청이 허용됨, false: 제한 초과
+     * @throws IOException - IOException
+     */
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws IOException {
 
@@ -43,22 +54,35 @@ public class RateLimiterInterceptor implements HandlerInterceptor {
             return false;
         }
 
-        // 사용자별 Bucket 가져오기
-        Bucket bucket = rateLimiterService.resolveBucket(userId);
+        if (request.getRequestURI().startsWith("/ocr/analyze")) {
+            CachedBodyHttpServletWrapper cachedRequest = (CachedBodyHttpServletWrapper) request;
 
+            // Request Body에서 이미지 개수 추출
+            ImageParsingRequest imageParsingRequest = new ObjectMapper()
+                    .readValue(cachedRequest.getInputStream(), ImageParsingRequest.class);
+            int imageCount = imageParsingRequest.getBase64Images().size();
 
-        // 요청당 1개 토큰 소비
-        if (!bucket.tryConsume(1)) {
-            response.setStatus(HttpStatus.TOO_MANY_REQUESTS.value());
-            response.getWriter().write("Too Many Requests - Daily limit reached");
-            return false;
+            // 사용자별 버킷 가져오기
+            Bucket bucket = rateLimiterService.resolveBucket(userId);
+
+            // 현재 사용한 이미지 개수
+            int usedImages = rateLimiterService.getUsedImages(userId);
+            long remainingTokens = bucket.getAvailableTokens();
+
+            // 사용 가능 이미지 개수 확인
+            if (imageCount > remainingTokens) {
+                response.setCharacterEncoding("UTF-8");
+                response.setStatus(HttpStatus.TOO_MANY_REQUESTS.value());
+                response.getWriter().write("오늘 전송할 수 있는 이미지 수를 초과했습니다. 남은 이미지 전송 가능 수: " + remainingTokens);
+                return false;
+            }
+
+            // 버킷에서 이미지 개수만큼 토큰 소모
+            bucket.tryConsume(imageCount);
+
+            // 로그 출력
+            System.out.printf("userId: %s - 이미지 사용량: %d/%d\n", userId, usedImages + imageCount, RateLimiterService.MAX_IMAGES);
         }
-
-        int usedRequests = rateLimiterService.getUsedRequests(userId);
-        long maxTokens = RateLimiterService.MAX_TOKENS; // 서비스의 MAX_TOKENS 값을 참조
-        // 로그로 요청 횟수 출력
-        System.out.printf("userId: %s - 사용량: %d/%d (1개 요청당 1토큰 소모)%n", userId, usedRequests, maxTokens);
-
 
         return true;
     }
