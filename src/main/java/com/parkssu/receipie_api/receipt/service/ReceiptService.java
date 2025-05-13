@@ -2,20 +2,22 @@ package com.parkssu.receipie_api.receipt.service;
 
 import com.parkssu.receipie_api.member.entity.Member;
 import com.parkssu.receipie_api.member.repository.MemberRepository;
-import com.parkssu.receipie_api.receipt.dto.BuyerDto;
-import com.parkssu.receipie_api.receipt.dto.ItemDto;
-import com.parkssu.receipie_api.receipt.dto.ReceiptRequestDto;
+import com.parkssu.receipie_api.receipt.dto.request.ReceiptRequestDto;
+import com.parkssu.receipie_api.receipt.dto.response.BuyerResponseDto;
+import com.parkssu.receipie_api.receipt.dto.response.ItemResponseDto;
+import com.parkssu.receipie_api.receipt.dto.response.ParticipantResponseDto;
+import com.parkssu.receipie_api.receipt.dto.response.ReceiptResponseDto;
 import com.parkssu.receipie_api.receipt.entity.*;
-import com.parkssu.receipie_api.receipt.repository.*;
+import com.parkssu.receipie_api.receipt.repository.ReceiptRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
- * ReceiptService - 영수증 저장 트랜잭션 처리 클래스
+ * ✅ ReceiptService - 영수증 저장, 조회, 수정, 삭제를 처리하는 서비스
  */
 @Service
 @RequiredArgsConstructor
@@ -24,139 +26,178 @@ public class ReceiptService {
     private final ReceiptRepository receiptRepository;
     private final MemberRepository memberRepository;
 
+    /**
+     * 영수증 생성
+     */
     @Transactional
     public Long createReceipt(ReceiptRequestDto requestDto, String email) {
-        // 1. Member 조회
+
         Member member = memberRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("해당 사용자가 존재하지 않습니다."));
 
-        // 2. Receipt 생성
+        // 영수증 생성
         Receipt receipt = new Receipt();
         receipt.setStoreName(requestDto.getStoreName());
         receipt.setDate(requestDto.getDate());
         receipt.setTotalPrice(requestDto.getTotalPrice());
-        receipt.setMember(member); // JWT에서 추출한 사용자(Member)와 연결
+        receipt.setMember(member);
 
-        // 3. 참여자 엔티티 생성
-        List<ReceiptParticipant> participants = new ArrayList<>();
-        if (requestDto.getParticipants() != null) {
-            for (String username : requestDto.getParticipants()) {
-                ReceiptParticipant participant = new ReceiptParticipant();
-                participant.setUsername(username);
-                participant.setReceipt(receipt);
-                participants.add(participant);
-            }
-        }
+        // 참여자 생성
+        List<ReceiptParticipant> participants = requestDto.getParticipants().stream()
+                .map(username -> {
+                    ReceiptParticipant participant = new ReceiptParticipant();
+                    participant.setUsername(username);
+                    participant.setReceipt(receipt);
+                    return participant;
+                }).collect(Collectors.toList());
+
         receipt.setParticipants(participants);
 
-        // 4. 항목 + 구매자 엔티티 생성
-        List<Item> items = new ArrayList<>();
-        if (requestDto.getItems() != null) {
-            for (ItemDto itemDto : requestDto.getItems()) {
-                Item item = new Item();
-                item.setName(itemDto.getName());
-                item.setCount(itemDto.getCount());
-                item.setPrice(itemDto.getPrice());
-                item.setReceipt(receipt);
+        // 항목 및 구매자 생성
+        List<Item> items = requestDto.getItems().stream()
+                .map(itemDto -> {
+                    Item item = new Item();
+                    item.setName(itemDto.getName());
+                    item.setCount(itemDto.getCount());
+                    item.setPrice(itemDto.getPrice());
+                    item.setReceipt(receipt);
 
-                List<ItemBuyer> buyers = new ArrayList<>();
-                if (itemDto.getBuyers() != null) {
-                    for (BuyerDto buyerDto : itemDto.getBuyers()) {
-                        ItemBuyer buyer = new ItemBuyer();
-                        buyer.setUsername(buyerDto.getUsername());
-                        buyer.setCount(buyerDto.getCount());
-                        buyer.setItem(item);
-                        buyers.add(buyer);
-                    }
-                }
-                item.setBuyers(buyers);
-                items.add(item);
-            }
-        }
+                    // 구매자 생성
+                    List<ItemBuyer> buyers = itemDto.getBuyers().stream()
+                            .map(buyerDto -> {
+                                ItemBuyer buyer = new ItemBuyer();
+                                buyer.setUsername(buyerDto.getUsername());
+                                buyer.setCount(buyerDto.getCount());
+                                buyer.setItem(item);
+                                return buyer;
+                            }).collect(Collectors.toList());
+
+                    item.setBuyers(buyers);
+                    return item;
+                }).collect(Collectors.toList());
+
         receipt.setItems(items);
 
-        // 5. 저장
-        Receipt saved = receiptRepository.save(receipt);
-        return saved.getId();
-    }
-    /**
-     * 특정 사용자의 영수증 목록 조회
-     */
-    @Transactional
-    public List<Receipt> getReceiptsByMember(String email) {
-        Member member = memberRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalArgumentException("해당 사용자가 존재하지 않습니다."));
-        return receiptRepository.findByMember_Id(member.getId());
+        Receipt savedReceipt = receiptRepository.save(receipt);
+        return savedReceipt.getId();
     }
 
+    /**
+     *  특정 사용자의 영수증 목록 조회
+     */
+    @Transactional
+    public List<ReceiptResponseDto> getReceiptsByMember(String email) {
+
+        Member member = memberRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("해당 사용자가 존재하지 않습니다."));
+
+        List<Receipt> receipts = receiptRepository.findByMember_Id(member.getId());
+
+        return receipts.stream()
+                .map(this::convertToResponseDto)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * 영수증 삭제
+     */
     @Transactional
     public void deleteReceipt(Long id) {
         receiptRepository.deleteById(id);
     }
 
+    /**
+     * 영수증 업데이트
+     */
     @Transactional
     public Long updateReceipt(Long receiptId, ReceiptRequestDto requestDto, String email) {
+
         Member member = memberRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("해당 사용자가 존재하지 않습니다."));
 
         Receipt receipt = receiptRepository.findById(receiptId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 영수증이 존재하지 않습니다."));
 
-        // 영수증 소유자 확인
         if (!receipt.getMember().getId().equals(member.getId())) {
             throw new IllegalArgumentException("해당 영수증의 소유자가 아닙니다.");
         }
 
-        // 1. 기본 필드 업데이트
+        // 영수증 업데이트
         receipt.setStoreName(requestDto.getStoreName());
         receipt.setDate(requestDto.getDate());
         receipt.setTotalPrice(requestDto.getTotalPrice());
 
-        // 2. 기존 항목 및 참여자 삭제
+        // 기존 항목 및 참여자 제거
         receipt.getItems().clear();
         receipt.getParticipants().clear();
 
-        // 3. 새로운 참여자 추가
-        List<ReceiptParticipant> participants = new ArrayList<>();
-        if (requestDto.getParticipants() != null) {
-            for (String username : requestDto.getParticipants()) {
-                ReceiptParticipant participant = new ReceiptParticipant();
-                participant.setUsername(username);
-                participant.setReceipt(receipt);
-                participants.add(participant);
-            }
-        }
+        // 새로운 참여자 추가
+        List<ReceiptParticipant> participants = requestDto.getParticipants().stream()
+                .map(username -> {
+                    ReceiptParticipant participant = new ReceiptParticipant();
+                    participant.setUsername(username);
+                    participant.setReceipt(receipt);
+                    return participant;
+                }).collect(Collectors.toList());
+
         receipt.setParticipants(participants);
 
-        // 4. 새로운 항목 추가
-        List<Item> items = new ArrayList<>();
-        if (requestDto.getItems() != null) {
-            for (ItemDto itemDto : requestDto.getItems()) {
-                Item item = new Item();
-                item.setName(itemDto.getName());
-                item.setCount(itemDto.getCount());
-                item.setPrice(itemDto.getPrice());
-                item.setReceipt(receipt);
+        // 새로운 항목 추가
+        List<Item> items = requestDto.getItems().stream()
+                .map(itemDto -> {
+                    Item item = new Item();
+                    item.setName(itemDto.getName());
+                    item.setCount(itemDto.getCount());
+                    item.setPrice(itemDto.getPrice());
+                    item.setReceipt(receipt);
 
-                List<ItemBuyer> buyers = new ArrayList<>();
-                if (itemDto.getBuyers() != null) {
-                    for (BuyerDto buyerDto : itemDto.getBuyers()) {
-                        ItemBuyer buyer = new ItemBuyer();
-                        buyer.setUsername(buyerDto.getUsername());
-                        buyer.setCount(buyerDto.getCount());
-                        buyer.setItem(item);
-                        buyers.add(buyer);
-                    }
-                }
-                item.setBuyers(buyers);
-                items.add(item);
-            }
-        }
+                    // 구매자 추가
+                    List<ItemBuyer> buyers = itemDto.getBuyers().stream()
+                            .map(buyerDto -> {
+                                ItemBuyer buyer = new ItemBuyer();
+                                buyer.setUsername(buyerDto.getUsername());
+                                buyer.setCount(buyerDto.getCount());
+                                buyer.setItem(item);
+                                return buyer;
+                            }).collect(Collectors.toList());
+
+                    item.setBuyers(buyers);
+                    return item;
+                }).collect(Collectors.toList());
+
         receipt.setItems(items);
 
-        // 저장
-        Receipt updated = receiptRepository.save(receipt);
-        return updated.getId();
+        Receipt updatedReceipt = receiptRepository.save(receipt);
+        return updatedReceipt.getId();
     }
 
+    /**
+     * ✅ Receipt → ReceiptResponseDto로 변환하는 메서드
+     */
+    private ReceiptResponseDto convertToResponseDto(Receipt receipt) {
+
+        List<ItemResponseDto> itemDtos = receipt.getItems().stream()
+                .map(item -> new ItemResponseDto(
+                        item.getId(),
+                        item.getName(),
+                        item.getCount(),
+                        item.getPrice(),
+                        item.getBuyers().stream()
+                                .map(buyer -> new BuyerResponseDto(buyer.getId(), buyer.getUsername(), buyer.getCount()))
+                                .collect(Collectors.toList())
+                )).collect(Collectors.toList());
+
+        List<ParticipantResponseDto> participantDtos = receipt.getParticipants().stream()
+                .map(participant -> new ParticipantResponseDto(participant.getId(), participant.getUsername()))
+                .collect(Collectors.toList());
+
+        return ReceiptResponseDto.builder()
+                .id(receipt.getId())
+                .storeName(receipt.getStoreName())
+                .date(receipt.getDate())
+                .totalPrice(receipt.getTotalPrice())
+                .items(itemDtos)
+                .participants(participantDtos)
+                .build();
+    }
 }

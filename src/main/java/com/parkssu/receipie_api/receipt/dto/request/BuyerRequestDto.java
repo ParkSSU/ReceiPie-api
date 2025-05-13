@@ -1,17 +1,16 @@
-package com.parkssu.receipie_api.receipt.dto;
+package com.parkssu.receipie_api.receipt.dto.request;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 /**
- * BuyerDto - 구매자 데이터 구조
+ * ✅ BuyerRequestDto - 구매자 생성 시 사용하는 DTO
  */
 @Getter
 @Setter
 @NoArgsConstructor
-public class BuyerDto {
+public class BuyerRequestDto {
     private String username;
     private int count;
 }
-

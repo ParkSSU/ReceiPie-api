@@ -1,4 +1,4 @@
-package com.parkssu.receipie_api.receipt.dto;
+package com.parkssu.receipie_api.receipt.dto.request;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -6,16 +6,15 @@ import lombok.Setter;
 
 import java.util.List;
 
-
 /**
- * ItemDto - 항목 데이터 구조
+ * ✅ ItemRequestDto - 항목 생성 시 사용하는 DTO
  */
 @Getter
 @Setter
 @NoArgsConstructor
-public class ItemDto {
+public class ItemRequestDto {
     private String name;
     private int count;
     private int price;
-    private List<BuyerDto> buyers;
+    private List<BuyerRequestDto> buyers;
 }
