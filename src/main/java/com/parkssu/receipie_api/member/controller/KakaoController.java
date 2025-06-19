@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.CrossOrigin;
+
 
 /**
  * KakaoController - 카카오 OAuth 로그인 관련 컨트롤러
@@ -18,6 +20,10 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/oauth/kakao")
 @RequiredArgsConstructor
 @Tag(name = "Kakao OAuth", description = "카카오 로그인 및 인증 API")
+@CrossOrigin(origins = {
+    "http://localhost:5173",
+    "https://recei-pie-fe.vercel.app"
+}, maxAge = 3600)
 public class KakaoController {
 
     private final KakaoOAuthService kakaoOAuthService;

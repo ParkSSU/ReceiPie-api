@@ -24,8 +24,8 @@ public class JwtUtil {
 
     private Key key;
 
-    // 토큰 유효 시간: 1시간 (1000ms * 60초 * 60분)
-    private static final long EXPIRATION_TIME = 1000 * 60 * 60;
+    // 토큰 유효 시간: 1시간 (1000ms * 60초 * 60분 * 24 * 60 )
+    private static final long EXPIRATION_TIME = 1000 * 60 * 60 * 24 * 60;
 
     // 생성자 이후 실행되어 key 객체를 초기화
     @PostConstruct
