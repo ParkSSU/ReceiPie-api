@@ -56,6 +56,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+    
       - name: Copy docker-compose to EC2
         uses: appleboy/scp-action@v0.1.4
         with:
